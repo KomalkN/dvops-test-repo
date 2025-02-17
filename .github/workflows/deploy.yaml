@@ -1,0 +1,36 @@
+name: Build and Run Docker Container
+
+on:
+  push:
+    branches:
+      - main  # Triggers when code is pushed to the main branch
+
+jobs:
+  build-and-run:
+    name: Build & Run Docker Image
+    runs-on: ubuntu-latest  # Runs on the latest Ubuntu environment
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3  # Check out the repository code
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2  # Set up Docker buildx for multi-platform support
+
+      - name: Build Docker Image
+        run: |
+          docker build -t dvops-test-app .  # Builds the Docker image with tag 'dvops-test-app'
+
+      - name: Run Docker Container
+        run: |
+          docker run -d -p 3000:3000 --name test-app dvops-test-app  # Runs the container in detached mode
+
+      - name: Test if Docker Container is Running
+        run: |
+          sleep 5  # Wait for the container to initialize
+          curl -f http://localhost:3000 || exit 1  # Check if the app is accessible
+
+      # - name: Stop and Remove Docker Container
+      #   run: |
+      #     docker stop test-app  # Stop the running container
+      #     docker rm test-app  # Remove the container after the test
